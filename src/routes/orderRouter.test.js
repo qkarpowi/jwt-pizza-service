@@ -1,7 +1,5 @@
 const request = require('supertest');
-const app = require('../service'); // Adjust if needed
-const { DB } = require('../database/database.js');
-
+const app = require('../service');
 const testAdmin = { email: 'a@jwt.com', password: 'admin' };
 const testUser = { email: 't@jwt.com', password: 'test' };
 
@@ -108,8 +106,6 @@ beforeAll(async () => {
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('order');
     expect(res.body.order).toHaveProperty('id');
-
-    createdOrderId = res.body.order.id;
   });
 
   /** ❌ Unauthorized user cannot create an order */

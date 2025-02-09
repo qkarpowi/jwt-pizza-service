@@ -6,8 +6,6 @@ describe('Database Functions', () => {
   let testFranchiseId;
   let testStoreId;
   let testMenuItemId;
-  let testOrderId;
-  let authToken;
 
   beforeAll(async () => {
     testUser = { name: 'Test User', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'testpassword', roles: [{ role: 'diner' }] };

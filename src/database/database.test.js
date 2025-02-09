@@ -100,6 +100,7 @@ describe('Database Functions', () => {
   });
 
 
+
   /** ✅ Test logging out a user */
   test('logoutUser', async () => {
     await expect(DB.logoutUser('test_token')).resolves.not.toThrow();

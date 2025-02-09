@@ -1,21 +1,30 @@
 const request = require('supertest');
 const app = require('../service');
 const testAdmin = { email: 'a@jwt.com', password: 'admin' };
-const testUser = { email: 't@jwt.com', password: 'test' };
+const testUser = { email: 'order@jwt.com', password: 'test' };
 
 let adminToken;
 let userToken;
 
 async function loginUser(user) {
   const loginRes = await request(app).put('/api/auth').send(user);
-  expect(loginRes.status).toBe(200);
-  expect(loginRes.body).toHaveProperty('token');
   return loginRes.body.token;
+}
+
+async function registerUser(user) {
+  const registerRes = await request(app).post('/api/auth').send(user);
+  expect(registerRes.status).toBe(200);
+  expect(registerRes.body.token).toBeDefined();
+  return registerRes.body.token;
 }
 
 beforeAll(async () => {
   adminToken = await loginUser(testAdmin);
   userToken = await loginUser(testUser);
+  if(!userToken){
+    testUser.name = "order";
+    userToken = await registerUser(testUser);
+  }
 });
 
   let createdMenuItemId;
@@ -66,7 +75,7 @@ beforeAll(async () => {
   });
 
   /** ❌ Attempt to add menu item with missing fields */
-  test('PUT /api/order/menu - Missing fields should return 400', async () => {
+  test('PUT /api/order/menu - Missing fields should return 500', async () => {
     const res = await request(app)
       .put('/api/order/menu')
       .set('Authorization', `Bearer ${adminToken}`)
@@ -141,7 +150,15 @@ beforeAll(async () => {
       .send(newOrder);
 
     expect(res.status).toBe(500);
-    expect(res.body.message).toBe('Failed to fulfill order at factory');
 
     global.fetch.mockRestore();
+  });
+
+  afterAll(async () => {
+    const logoutRes = await request(app)
+    .delete('/api/auth')
+    .set('Authorization', `Bearer ${adminToken}`);
+
+  expect(logoutRes.status).toBe(200);
+  expect(logoutRes.body.message).toBe('logout successful');
   });

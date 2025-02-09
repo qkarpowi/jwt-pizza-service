@@ -1,27 +1,24 @@
 const request = require('supertest');
-const app = require('../service'); // Adjust if needed
+const app = require('../service');
 const { DB } = require('../database/database.js');
 
 const testAdmin = { email: 'a@jwt.com', password: 'admin' };
-const testUser = { email: 't@jwt.com', password: 'test' };
+const testUser = { email: 'franchise@jwt.com', password: 'test' };
 
 let adminToken;
 let userToken;
 
 async function loginUser(user) {
   const loginRes = await request(app).put('/api/auth').send(user);
-  expect(loginRes.status).toBe(200);
-  expect(loginRes.body).toHaveProperty('token');
   return loginRes.body.token;
 }
 
-beforeAll(async () => {
-  adminToken = await loginUser(testAdmin);
-  userToken = await loginUser(testUser);
-});
-
-  let createdFranchiseId;
-  let createdStoreId;
+async function registerUser(user) {
+  const registerRes = await request(app).post('/api/auth').send(user);
+  expect(registerRes.status).toBe(200);
+  expect(registerRes.body.token).toBeDefined();
+  return registerRes.body.token;
+}
 
   /** ✅ Test fetching franchises */
   test('GET /api/franchise - List all franchises', async () => {
@@ -29,6 +26,28 @@ beforeAll(async () => {
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
+
+    /** ❌ Unauthorized user trying to fetch franchises */
+    test('GET /api/franchise/:userId - Unauthorized user should be denied', async () => {
+      const res = await request(app).get('/api/franchise/4');
+      expect(res.status).toBe(401);
+    });
+
+
+  describe('Franchise Router', () => {
+
+beforeEach(async () => {
+  adminToken = await loginUser(testAdmin);
+  userToken = await loginUser(testUser);
+  if(!userToken){
+    testUser.name = "franchise";
+    userToken = await registerUser(testUser);
+  }
+});
+  let createdFranchiseId;
+  let createdStoreId;
+
+
 
   /** ✅ Test creating a franchise (Admin Only) */
   test('POST /api/franchise - Admin can create a franchise', async () => {
@@ -73,12 +92,6 @@ beforeAll(async () => {
 
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-  });
-
-  /** ❌ Unauthorized user trying to fetch franchises */
-  test('GET /api/franchise/:userId - Unauthorized user should be denied', async () => {
-    const res = await request(app).get('/api/franchise/4');
-    expect(res.status).toBe(401);
   });
 
   /** ✅ Create a store (Admin Only) */
@@ -156,3 +169,20 @@ beforeAll(async () => {
       await DB.deleteFranchise(createdFranchiseId);
     }
   });
+
+  afterEach(async () => {
+    const logoutAdmin = await request(app)
+    .delete('/api/auth')
+    .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(logoutAdmin.status).toBe(200);
+    expect(logoutAdmin.body.message).toBe('logout successful');
+
+    const logoutRes = await request(app)
+    .delete('/api/auth')
+    .set('Authorization', `Bearer ${userToken}`);
+
+    expect(logoutRes.status).toBe(200);
+    expect(logoutRes.body.message).toBe('logout successful');
+  });
+});

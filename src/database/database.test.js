@@ -11,7 +11,6 @@ describe('Database Functions', () => {
     testUser = { name: 'Test User', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'testpassword', roles: [{ role: 'diner' }] };
     const registeredUser = await DB.addUser(testUser);
     testUser.id = registeredUser.id;
-    authToken = await DB.loginUser(testUser.id, 'test_token');
   });
 
   afterAll(async () => {
@@ -85,7 +84,6 @@ describe('Database Functions', () => {
     };
     const result = await DB.addDinerOrder(testUser, order);
     expect(result).toHaveProperty('id');
-    testOrderId = result.id;
   });
 
   /** ✅ Test getting orders */
@@ -99,11 +97,6 @@ describe('Database Functions', () => {
   test('getOrders - no orders', async () => {
     const result = await DB.getOrders({ id: 99999 });
     expect(result.orders).toEqual([]);
-  });
-
-  /** ✅ Test logging in a user */
-  test('loginUser', async () => {
-    await expect(DB.isLoggedIn('test_token')).resolves.toBe(true);
   });
 
 

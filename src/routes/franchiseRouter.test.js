@@ -36,7 +36,7 @@ async function registerUser(user) {
 
   describe('Franchise Router', () => {
 
-beforeEach(async () => {
+beforeAll(async () => {
   adminToken = await loginUser(testAdmin);
   userToken = await loginUser(testUser);
   if(!userToken){
@@ -170,13 +170,13 @@ beforeEach(async () => {
     }
   });
 
-  afterEach(async () => {
-    await request(app)
-    .delete('/api/auth')
-    .set('Authorization', `Bearer ${adminToken}`);
+  // afterEach(async () => {
+  //   await request(app)
+  //   .delete('/api/auth')
+  //   .set('Authorization', `Bearer ${adminToken}`);
 
-    await request(app)
-    .delete('/api/auth')
-    .set('Authorization', `Bearer ${userToken}`);
-  });
+  //   await request(app)
+  //   .delete('/api/auth')
+  //   .set('Authorization', `Bearer ${userToken}`);
+  // });
 });

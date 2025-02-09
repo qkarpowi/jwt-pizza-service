@@ -1,12 +1,32 @@
 const request = require('supertest');
 const app = require('../service');
-const { DB } = require('../database/database.js');
+const { Role, DB } = require('../database/database.js');
 
-const testAdmin = { email: 'a@jwt.com', password: 'admin' };
+let testAdmin;
 const testUser = { email: 'franchise@jwt.com', password: 'test' };
 
 let adminToken;
 let userToken;
+
+function randomName() {
+  const adjectives = ['Swift', 'Brave', 'Clever', 'Bold', 'Mighty', 'Wise', 'Fierce', 'Noble'];
+  const animals = ['Falcon', 'Tiger', 'Wolf', 'Panther', 'Eagle', 'Hawk', 'Lion', 'Bear'];
+  
+  const randomAdjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+  const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+  const randomNumber = Math.floor(Math.random() * 1000);
+
+  return `${randomAdjective}${randomAnimal}${randomNumber}`;
+}
+
+async function createAdminUser() {
+  let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
+  user.name = randomName();
+  user.email = user.name + '@admin.com';
+
+  user = await DB.addUser(user);
+  return { ...user, password: 'toomanysecrets' };
+}
 
 async function loginUser(user) {
   const loginRes = await request(app).put('/api/auth').send(user);
@@ -37,6 +57,7 @@ async function registerUser(user) {
   describe('Franchise Router', () => {
 
 beforeAll(async () => {
+  testAdmin = await createAdminUser();
   adminToken = await loginUser(testAdmin);
   userToken = await loginUser(testUser);
   if(!userToken){

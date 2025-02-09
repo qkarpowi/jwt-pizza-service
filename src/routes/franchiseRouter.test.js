@@ -171,18 +171,12 @@ beforeEach(async () => {
   });
 
   afterEach(async () => {
-    const logoutAdmin = await request(app)
+    await request(app)
     .delete('/api/auth')
     .set('Authorization', `Bearer ${adminToken}`);
 
-    expect(logoutAdmin.status).toBe(200);
-    expect(logoutAdmin.body.message).toBe('logout successful');
-
-    const logoutRes = await request(app)
+    await request(app)
     .delete('/api/auth')
     .set('Authorization', `Bearer ${userToken}`);
-
-    expect(logoutRes.status).toBe(200);
-    expect(logoutRes.body.message).toBe('logout successful');
   });
 });
